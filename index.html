@@ -1,0 +1,606 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Yu's Graphics Sandbox</title>
+	<link href='http://fonts.googleapis.com/css?family=Quicksand:400,700' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+
+	<script src="js/three.min.js"></script>
+	<script src="js/OrbitControls.js"></script>
+	<script type="js/Detector.js"></script>
+	<script src="js/Stats.js"></script>
+	<script src="js/OBJLoader.js"></script>		
+	<script type="text/javascript" src="js/jscolor/jscolor.js"></script>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+	
+	<style>
+		#container {
+			background: #202020;
+			min-height: 100%;
+			min-width: 1680px;
+			width: 100%;
+			height: auto;
+			position: fixed;
+			top: 0;
+			left: 0;
+			margin: auto;
+		}
+
+		#myTitle {
+			margin-left: 10px;
+			margin-top: 10px;
+    		font-family: 'Press Start 2P', cursive;
+    		font-size: 40px;
+    		text-shadow: 
+    			0px 8px 3px rgba(0,0,0,0.4),
+         		0px 16px 13px rgba(0,0,0,0.1),
+         		0px 36px 23px rgba(0,0,0,0.1);
+    		color: #FFFFFF;        		
+  		}
+
+  		#scene,#control {
+			float:left;
+			height: 600px;
+			margin-top: 20px;
+			margin-bottom:10px;
+		}
+
+		#scene {
+			background: #2E2E2E;
+			width: 800px;
+			margin-left: 30px;
+			margin-right: 10px;
+			box-shadow:0 0 6px black;
+		}
+
+		#control {
+			width: 800px;
+			margin-right: 10px;
+			padding-top: 1px;
+			overflow: visible;
+		}
+
+		control.title {
+			font-size: 20px;
+			margin-left: 6px;
+			font-family: 'Quicksand', sans-serif;
+			color: #838383;
+		}
+
+		control.panel {
+			font-size: 14px;
+			margin-left: 6px;
+			font-family: 'Quicksand', sans-serif;
+			-webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+        	box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+			color: white;
+		}
+
+		#console {
+			margin-left: 10px;
+			margin-right: 10px;
+			color: #00FF00;
+			font-family: 'Source Code Pro', sans-serif;
+		}
+
+		#fps {
+			position: fixed;
+			margin-left: 10px;
+		}
+
+		#copyright {
+  			width:100%;
+			height:25px;
+			min-width: 800px;
+			font-family: 'Quicksand', sans-serif;
+	  		color: #FFFFFF;
+	  		position: fixed;
+	  		margin-top: 640px;
+	  		font-size: 10px;
+  		}
+
+	</style>
+</head>
+
+<body>
+	<div id="container">
+		<div id="myTitle">
+				<center>Yu's Graphics Sandbox</center>
+		</div>			
+		<div id="scene">
+		</div>
+		<div id="control" class="title">
+			
+			<control class="title">Light Source<br></control>
+			<control class="panel">
+					<input type="checkbox" id="ambientSwitch" onclick="setupAmbientLight(this);" checked="true">
+				<label for="spotlight">Ambient Light</label>
+				<input type="checkbox" id="spotSwitch" onclick="setupSpotLight(this);" checked="true">
+				<label for="distantlight">Spot Light</label>
+				<input type="checkbox" id="distantSwitch" onclick="setupDistantLight(this);" checked="true">
+				<label for="distantlight">Distant Light</label>
+				<br><br>
+			</control>
+
+			<control class="title">Rendering Attribute Setup:</control>
+			<control class="panel">
+				<br>Ambient contribution:
+				<input type="range" name="AmbientTerm" min="0" max=".5" step=".01" onchange="getAmbientTerm(this.value);setAmbientTerm();">
+				<output id="AmbientTerm">0.25</output>
+			</control>
+
+			<control class="panel">
+				<br>Shininess:
+				<input type="range" name="Shininess" min="10" max="100" step=".5" onchange="getShininess(this.value);setShininess();">
+				<output id="Shininess">55</output>
+			</control>
+
+			<control class="panel">
+				<br>Ambient Color:
+				<input class="color {onImmediateChange:'updateAmbientColor(this);setAmbientColor();'}">
+				R:<input id="AmbientColor-r" size="4" />
+				G:<input id="AmbientColor-g" size="4" />
+				B:<input id="AmbientColor-b" size="4" />
+			</control>
+
+			<control class="panel">
+				<br>Diffuse Color:
+				<input class="color {onImmediateChange:'updateDiffuseColor(this);setDiffuseColor();'}">
+				R:<input id="DiffuseColor-r" size="4" />
+				G:<input id="DiffuseColor-g" size="4" />
+				B:<input id="DiffuseColor-b" size="4" />
+			</control>
+
+			<control class="panel">
+				<br>Specular Color:
+				<input class="color {onImmediateChange:'updateSpecularColor(this);setSpecularColor();'}">
+				R:<input id="SpecularColor-r" size="4" />
+				G:<input id="SpecularColor-g" size="4" />
+				B:<input id="SpecularColor-b" size="4" />
+			</control>
+			
+		</div>
+		
+		<div id="copyright">
+			<center>
+				<br><br>
+				Copyright &copy; 2015 Yu Wang
+			</center>
+		</div>
+	</div>
+	
+	<script type="x-shader/x-vertex" id="vertexShader">
+	#ifdef GL_ES
+	precision highp float;
+	#endif
+
+	uniform float ambientlightswitch;
+	uniform float spotlightswitch;
+	
+	uniform float Ka;
+	uniform float shininess;
+
+	uniform vec3 ambientcolor;
+	uniform vec3 diffusecolor;
+	uniform vec3 specularcolor;		
+	uniform vec3 light;
+
+	varying vec3 vNormal;
+	varying vec3 vertex_to_light_vector;
+
+	void main()
+	{
+		vNormal = normal;
+
+		vertex_to_light_vector = vec3(light - vec3(modelViewMatrix * vec4(position, 1.0)));
+		
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+	}
+	</script>
+
+	<script type="x-shader/x-fragment" id="fragmentShader">
+	#ifdef GL_ES
+	precision highp float;
+	#endif
+
+	uniform float ambientlightswitch;
+	uniform float spotlightswitch;
+	
+	uniform float Ka;
+	uniform float shininess;
+	uniform vec3 ambientcolor;
+	uniform vec3 diffusecolor;
+	uniform vec3 specularcolor;
+	uniform vec3 light;
+
+	varying vec3 vNormal;
+	varying vec3 vertex_to_light_vector;
+
+	void main()
+	{
+		vec3 normalize_normal = normalize(vNormal);
+		vec3 normalize_vertex_to_light_vector = normalize(vertex_to_light_vector);
+
+		float diffuseTerm = clamp(dot(normalize_normal, normalize_vertex_to_light_vector), 0.0, 1.0);
+
+		vec3 h = normalize(normalize_normal+normalize_vertex_to_light_vector);
+
+		float specularTerm = clamp(dot(normalize_normal, h), 0.0, 1.0);
+		specularTerm *= pow(specularTerm, shininess);
+
+		gl_FragColor = vec4(ambientlightswitch * ambientcolor * Ka + spotlightswitch * (specularcolor * specularTerm + diffusecolor * diffuseTerm), 1.0);
+	}
+	</script>
+
+	<script type="text/javascript">
+	
+	var sceneFilename, modelFilename;
+	var VSFilename, FSFilename;
+	var dirName;
+	
+	var ambientTerm = .5;
+	var shininess = 10;
+	var ambientcolor = new THREE.Vector3(0, 0, 0);
+	var diffusecolor = new THREE.Vector3(1, 0, 0);
+	var specularcolor = new THREE.Vector3(1, 1, 1);
+	var light = new THREE.Vector3(0, 0, 0);
+
+	var ambientlightswitch = 1.0;
+	var spotlightswitch = 1.0;
+	var distantlightswitch = 1.0;
+
+	var spotlight;
+	var directionallight;
+	var ambientlight;
+
+	var uniforms;
+	var shaderMaterial;
+	var loader;
+	var object;
+	var width, height;
+	var view_angle, aspect, near, far;
+	var container;
+	var renderer;
+	var camera;
+	var controls;
+	var scene;
+
+	init();
+
+	initLightSources(scene);
+
+	sceneInit();
+	
+	loadBoxScene();
+
+	animate();
+
+	function init () {
+
+		width = 800;
+		height = 600;
+		view_angle = 45;
+		aspect = width/height;
+		near = .1;
+		far = 20000;
+		$container = $('#scene');
+
+		renderer = new THREE.WebGLRenderer({'antialias':true});
+		renderer.setSize(width, height);
+		renderer.setFaceCulling(true);
+		renderer.shadowMapEnabled = true;
+		renderer.shadowMapSoft = true;
+
+		camera = new THREE.PerspectiveCamera(view_angle, aspect, near, far);
+		camera.position.x = 450;
+		camera.position.y = 500;			
+		camera.position.z = 500;
+		
+		controls = new THREE.OrbitControls( camera, renderer.domElement );
+		controls.addEventListener('update', render);
+		controls.maxPolarAngle = Math.PI/2;
+		controls.minDistance = 0;
+		controls.maxDistance = 2000;
+
+		scene = new THREE.Scene();
+		scene.shadowMapEnabled = true;
+		scene.add(camera);
+
+		$container.append(renderer.domElement);
+	}
+
+	function sceneInit() {
+		// handle variable inputs here
+		uniforms = {
+			"ambientlightswitch": {
+				type: "f",
+				value: 1
+			},
+			"spotlightswitch": {
+				type: "f",
+				value: 1
+			},
+			"distantlightswitch": {
+				type: "f",
+				value: 1
+			},
+			"Ka": {
+				type: "f",
+				value: ambientTerm
+			},
+			"shininess" : {
+				type: "f",
+				value: shininess
+			},
+			"ambientcolor" : {
+				type: "v3",
+				value: ambientcolor
+			},
+			"diffusecolor" : {
+				type: "v3",
+				value: diffusecolor
+			},
+			"specularcolor" : {
+				type: "v3",
+				value: specularcolor
+			},
+			"light" : {
+				type: "v3",
+				value: light
+			}
+		};
+
+		shaderMaterial = new THREE.ShaderMaterial({
+			needsUpdate:true,
+			uniforms: uniforms,
+			vertexShader: $('#vertexShader').text(),
+			fragmentShader: $('#fragmentShader').text()
+		});
+
+		loader = new THREE.OBJLoader();
+
+		loader.addEventListener('load', function (event) {
+	
+			object = event.content;
+			
+			object.traverse(function (child) {
+	
+				if (child instanceof THREE.Mesh) {
+					child.material = shaderMaterial;
+					child.castShadow = true;
+				}
+			});
+
+			object.position.y = 10;
+			object.scale.x = 20;
+			object.scale.y = 20;
+			object.scale.z = 20;
+
+			scene.add(object);
+		});
+
+		loader.load('models/bunny.obj');
+	}
+
+	function initLightSources(Scene)
+	{
+		spotlight = new THREE.SpotLight(0xffffff, 1.5, 0, Math.PI/2, 0 );
+		spotlight.position.set(0, 300, 400);
+		spotlight.castShadow = true;
+		spotlight.shadowCameraVisible = true;
+		
+		directionallight = new THREE.DirectionalLight(0xffffff, 1, 0, Math.PI/2, 1 );
+		directionallight.position.set(0, 800, 0);
+		
+		ambientlight = new THREE.AmbientLight(0x000000);
+
+		Scene.add(spotlight);
+
+		Scene.add(directionallight);
+
+		Scene.add(ambientlight);
+	}
+	
+	function loadBoxScene()
+	{
+		var planeGeo_ground = new THREE.PlaneGeometry(8000, 8000, 100, 100);
+		var planeMat_ground = new THREE.MeshLambertMaterial({color: 0x33000F});
+		var plane_ground = new THREE.Mesh(planeGeo_ground, planeMat_ground);
+		plane_ground.rotation.x = -Math.PI/2;
+		plane_ground.position.y = -110;
+		plane_ground.receiveShadow = true;
+		scene.add(plane_ground);
+
+		var planeGeo_floor = new THREE.PlaneGeometry(400, 400, 100, 100);
+		var planeMat_floor = new THREE.MeshLambertMaterial({color: 0x8B8682});
+		var plane_floor = new THREE.Mesh(planeGeo_floor, planeMat_floor);
+		plane_floor.rotation.x = -Math.PI/2;
+		plane_floor.position.y = -100;
+		plane_floor.receiveShadow = true;
+		scene.add(plane_floor);
+
+		var planeGeo_ceiling = new THREE.PlaneGeometry(400, 400, 100, 100);
+		var planeMat_ceiling = new THREE.MeshLambertMaterial({color: 0x8B8682});
+		var plane_ceiling = new THREE.Mesh(planeGeo_ceiling, planeMat_ceiling);
+		plane_ceiling.rotation.x = Math.PI/2;
+		plane_ceiling.position.y = 300;
+		plane_ceiling.receiveShadow = true;
+		scene.add(plane_ceiling);
+
+		var planeGeo_wall_left = new THREE.PlaneGeometry(400, 400, 100, 100);
+		var planeMat_wall_left = new THREE.MeshLambertMaterial({color: 0x8B8682});
+		var plane_wall_left = new THREE.Mesh(planeGeo_wall_left, planeMat_wall_left);
+		plane_wall_left.rotation.y = Math.PI/2;
+		plane_wall_left.position.x = -200;
+		plane_wall_left.position.y = 100;
+		plane_wall_left.receiveShadow = true;
+		scene.add(plane_wall_left);
+
+		var planeGeo_wall_far = new THREE.PlaneGeometry(400, 400, 100, 100);
+		var planeMat_wall_far = new THREE.MeshLambertMaterial({color: 0x8B8682});
+		var plane_wall_far = new THREE.Mesh(planeGeo_wall_far, planeMat_wall_far);
+		plane_wall_far.rotation.z = -Math.PI/2;
+		plane_wall_far.position.y = 100;
+		plane_wall_far.position.z = -200;
+		plane_wall_far.receiveShadow = true;
+		scene.add(plane_wall_far);
+
+		var planeGeo_wall_right = new THREE.PlaneGeometry(400, 400, 100, 100);
+		var planeMat_wall_right = new THREE.MeshLambertMaterial({color: 0x8B8682});
+		var plane_wall_right = new THREE.Mesh(planeGeo_wall_right, planeMat_wall_right);
+		plane_wall_right.rotation.y = -Math.PI/2;
+		plane_wall_right.position.x = 200;
+		plane_wall_right.position.y = 100;
+		plane_wall_right.receiveShadow = true;
+		scene.add(plane_wall_right);
+
+		var planeGeo_wall_near = new THREE.PlaneGeometry(400, 400, 100, 100);
+		var planeMat_wall_near = new THREE.MeshLambertMaterial({color: 0x8B8682});
+		var plane_wall_near = new THREE.Mesh(planeGeo_wall_near, planeMat_wall_near);
+		plane_wall_near.rotation.x = Math.PI;
+		plane_wall_near.position.y = 100;
+		plane_wall_near.position.z = 200;
+		plane_wall_near.receiveShadow = true;
+		scene.add(plane_wall_near);
+	}
+
+	function animate() {
+		requestAnimationFrame(animate);
+		render();
+	}
+
+	function render() {
+		controls.update();
+		camera.lookAt( scene.position );
+		shaderMaterial.needsUpdate = true;
+
+		if (distantlightswitch == false)
+		{
+			scene.remove(directionallight);
+		}
+		else
+		{
+			scene.add(directionallight);
+		}
+
+		renderer.clear();
+		renderer.render(scene, camera);
+	}
+
+	function getSceneName()
+	{
+		sceneFilename = document.getElementById('sceneFile');
+		alert(sceneFilename.value);
+	}
+
+	function getModelName()
+	{
+		modelFilename = document.getElementById('modelFile');
+		scene.remove(object);
+		loader.load(modelFilename.value);
+		alert(modelFilename.value);
+	}
+
+	function getVSName()
+	{
+		VSFilename = document.getElementById('VSFile');
+		alert(VSFilename.value);
+	}
+
+	function getFSName()
+	{
+		FSFilename = document.getElementById('FSFile');
+		alert(FSFilename.value);
+	}
+
+	function saveFrames()
+	{
+		dirName = document.getElementById('dirName');
+		alert(dirName.value);
+	}
+
+	function setupAmbientLight(Switch) {
+		if (Switch.checked == true)
+			ambientlightswitch = 1.0;
+		else 
+			ambientlightswitch = 0;
+
+		shaderMaterial.uniforms.ambientlightswitch.value = ambientlightswitch;
+	}
+
+	function setupSpotLight(Switch) {
+		if (Switch.checked == true)
+			spotlightswitch = 1.0;
+		else
+			spotlightswitch = 0.0;
+
+		shaderMaterial.uniforms.spotlightswitch.value = spotlightswitch;
+	}
+
+	function setupDistantLight(Switch) {
+		if (Switch.checked == true)
+			distantlightswitch = 1.0;
+		else
+			distantlightswitch = 0.0;
+	}
+
+	function getAmbientTerm(val) {
+  		document.getElementById('AmbientTerm').value=val;
+  		ambientTerm = val;
+	}
+
+	function setAmbientTerm(val) {
+  		shaderMaterial.uniforms.Ka.value = ambientTerm;
+	}
+
+	function getShininess(val) {
+  		document.getElementById('Shininess').value=val;
+  		shininess = val;
+	}
+
+	function setShininess() {
+		shaderMaterial.uniforms.shininess.value = shininess;
+	}
+
+	function updateAmbientColor(color) {
+		document.getElementById('AmbientColor-r').value = color.rgb[0];
+		document.getElementById('AmbientColor-g').value = color.rgb[1];
+		document.getElementById('AmbientColor-b').value = color.rgb[2];
+
+		ambientcolor = new THREE.Vector3(color.rgb[0], color.rgb[1], color.rgb[2]);
+	}
+
+	function setAmbientColor() {
+		shaderMaterial.uniforms.ambientcolor.value = ambientcolor;
+	}
+
+	function updateDiffuseColor(color) {
+		document.getElementById('DiffuseColor-r').value = color.rgb[0];
+		document.getElementById('DiffuseColor-g').value = color.rgb[1];
+		document.getElementById('DiffuseColor-b').value = color.rgb[2];
+
+		diffusecolor = new THREE.Vector3(color.rgb[0], color.rgb[1], color.rgb[2]);
+	}
+
+	function setDiffuseColor() {
+		shaderMaterial.uniforms.diffusecolor.value = diffusecolor;
+	}
+
+	function updateSpecularColor(color) {
+		document.getElementById('SpecularColor-r').value = color.rgb[0];
+		document.getElementById('SpecularColor-g').value = color.rgb[1];
+		document.getElementById('SpecularColor-b').value = color.rgb[2];
+
+		specularcolor = new THREE.Vector3(color.rgb[0], color.rgb[1], color.rgb[2]);
+	}
+
+	function setSpecularColor(){
+		shaderMaterial.uniforms.specularcolor.value = specularcolor;
+	}
+
+</script>
+</body>
+</html>
