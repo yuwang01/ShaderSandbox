@@ -11,5 +11,6 @@ GNU GENERAL PUBLIC LICENSE, Version 2
   - Stats.js
   - OBJLoader.js
   - jscolor.js
+  - dat-gui.js
 
 * If you find this project interesting or helpful, please feel free to contact me at wang.yu@umbc.edu
