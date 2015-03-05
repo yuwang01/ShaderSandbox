@@ -1,5 +1,5 @@
 # ShaderSandbox
-(GLP v2.0 License)
+GNU GENERAL PUBLIC LICENSE, Version 2
 
 * Developer: Yu Wang
 
