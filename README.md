@@ -5,7 +5,7 @@ GNU GENERAL PUBLIC LICENSE, Version 2
 
 * This is a minimum shader sandbox for ambient+specular+diffuse shading testing
   - On load, the Stanford bunny is loaded with ambient+specular+diffuse shading enabled with shadows
-  - Use mouse to drag within the scene to use orbit camera
+  - Use mouse to drag within the scene to use orbit camera, use mouse wheel to zoom in/out
   - Rendering attributes can be interactively editted to change the appearance of the bunny
     + ambient contribution
     + specular hightlight size
