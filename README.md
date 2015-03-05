@@ -25,4 +25,6 @@ GNU GENERAL PUBLIC LICENSE, Version 2
   - jscolor.js
   - dat-gui.js
 
+* After downloading the project, use some sort of file server (I use MAMP) and set the home directory properly. Open Chrome, and type "localhost" to run the application.
+
 * If you find this project interesting or helpful, please feel free to contact me at wang.yu@umbc.edu
