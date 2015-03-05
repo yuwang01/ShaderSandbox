@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8" />
-	<title>Yu's Graphics Sandbox</title>
+	<title>Yu's Shader Sandbox</title>
 	<link href='http://fonts.googleapis.com/css?family=Quicksand:400,700' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
@@ -13,7 +13,7 @@
 	<script src="js/Stats.js"></script>
 	<script src="js/OBJLoader.js"></script>		
 	<script type="text/javascript" src="js/jscolor/jscolor.js"></script>
-
+	<script type="text/javascript" src="js/dat.gui.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 	
 	<style>
@@ -79,6 +79,10 @@
 			color: white;
 		}
 
+		#my-gui-container {
+		    /*margin-top: 600px;*/
+		}
+
 		#console {
 			margin-left: 10px;
 			margin-right: 10px;
@@ -108,23 +112,13 @@
 <body>
 	<div id="container">
 		<div id="myTitle">
-				<center>Yu's Graphics Sandbox</center>
+				<center>Yu's Shader Sandbox</center>
 		</div>			
 		<div id="scene">
 		</div>
+		<!-- <div id='my-gui-container'></div> -->
 		<div id="control" class="title">
 			
-			<control class="title">Light Source<br></control>
-			<control class="panel">
-					<input type="checkbox" id="ambientSwitch" onclick="setupAmbientLight(this);" checked="true">
-				<label for="spotlight">Ambient Light</label>
-				<input type="checkbox" id="spotSwitch" onclick="setupSpotLight(this);" checked="true">
-				<label for="distantlight">Spot Light</label>
-				<input type="checkbox" id="distantSwitch" onclick="setupDistantLight(this);" checked="true">
-				<label for="distantlight">Distant Light</label>
-				<br><br>
-			</control>
-
 			<control class="title">Rendering Attribute Setup:</control>
 			<control class="panel">
 				<br>Ambient contribution:
@@ -161,7 +155,6 @@
 				G:<input id="SpecularColor-g" size="4" />
 				B:<input id="SpecularColor-b" size="4" />
 			</control>
-			
 		</div>
 		
 		<div id="copyright">
@@ -268,6 +261,17 @@
 	var controls;
 	var scene;
 
+	var controlContainer = null;
+	var gui = null;
+	var setconsole = null;
+
+	var control_lightSource_ambient;
+	var control_lightSource_spot;
+	var control_lightSource_distant;
+
+	var control_shadowCamera;
+	var control_castShadow;
+
 	init();
 
 	initLightSources(scene);
@@ -277,6 +281,14 @@
 	loadBoxScene();
 
 	animate();
+
+	function Console() {
+	    this.ambientlight = true;
+	    this.spotlight = true;
+	    this.distantlight = true;
+	    this.shadowcamera = true;
+	    this.castshadow = true;
+	}
 
 	function init () {
 
@@ -310,6 +322,48 @@
 		scene.add(camera);
 
 		$container.append(renderer.domElement);
+
+		setconsole = new Console();
+		gui = new dat.GUI({autoPlace: false});
+
+		controlContainer = document.getElementById('control');
+		controlContainer.appendChild(gui.domElement);
+
+		control_lightSource_ambient = gui.add(setconsole, 'ambientlight').listen();
+		control_lightSource_ambient.onChange(function(value) {
+			if (value === true)
+				ambientlightswitch = 1.0;
+			else
+				ambientlightswitch = 0.0;
+
+			shaderMaterial.uniforms.ambientlightswitch.value = ambientlightswitch;
+		});
+
+		control_lightSource_spot = gui.add(setconsole, 'spotlight').listen();
+		control_lightSource_spot.onChange(function(value) {
+			if (value == true)
+				spotlightswitch = 1.0;
+			else
+				spotlightswitch = 0.0;
+
+			shaderMaterial.uniforms.spotlightswitch.value = spotlightswitch;
+		});
+
+		control_lightSource_distant = gui.add(setconsole, 'distantlight').listen();
+		control_lightSource_distant.onChange(function(value) {
+			if (value == true)
+				distantlightswitch = 1.0;
+			else
+				distantlightswitch = 0.0;
+		});
+
+		control_shadowCamera = gui.add(setconsole, 'shadowcamera').listen();
+		control_shadowCamera.onChange(function(value) {
+			if (value === true)
+				spotlight.shadowCameraVisible = true;
+			else
+				spotlight.shadowCameraVisible = false;
+		});
 	}
 
 	function sceneInit() {
@@ -411,7 +465,7 @@
 		var plane_ground = new THREE.Mesh(planeGeo_ground, planeMat_ground);
 		plane_ground.rotation.x = -Math.PI/2;
 		plane_ground.position.y = -110;
-		plane_ground.receiveShadow = true;
+		plane_ground.receiveShadow = false;
 		scene.add(plane_ground);
 
 		var planeGeo_floor = new THREE.PlaneGeometry(400, 400, 100, 100);
