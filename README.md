@@ -1,4 +1,4 @@
-# ShaderSandbox
+# Shader Sandbox
 GNU GENERAL PUBLIC LICENSE, Version 2
 ![alt tag](icon.png)
 * Developer: Yu Wang
