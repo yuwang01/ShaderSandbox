@@ -1,6 +1,6 @@
 # ShaderSandbox
 GNU GENERAL PUBLIC LICENSE, Version 2
-
+![alt tag](icon.png)
 * Developer: Yu Wang
 
 * This is a minimum shader sandbox for ambient+specular+diffuse shading testing
